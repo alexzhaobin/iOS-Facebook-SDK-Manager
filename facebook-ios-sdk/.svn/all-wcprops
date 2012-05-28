@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/Projects/!svn/ver/26038/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk
+END
+SBJsonBase.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/SBJsonBase.h
+END
+SBJsonWriter.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/SBJsonWriter.h
+END
+SBJSON.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/SBJSON.h
+END
+FBRequest.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/FBRequest.h
+END
+FBLoginDialog.h
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/FBLoginDialog.h
+END
+NSString+SBJSON.h
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/NSString+SBJSON.h
+END
+NSObject+SBJSON.h
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/NSObject+SBJSON.h
+END
+FBConnect.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/FBConnect.h
+END
+FacebookManager.h
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/Projects/!svn/ver/26038/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/FacebookManager.h
+END
+libfacebook_ios_sdk.a
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/libfacebook_ios_sdk.a
+END
+FBFrictionlessRequestSettings.h
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/FBFrictionlessRequestSettings.h
+END
+FBDialog.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/FBDialog.h
+END
+JSON.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/JSON.h
+END
+FacebookManager.m
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/svn/Projects/!svn/ver/26038/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/FacebookManager.m
+END
+Facebook.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/Facebook.h
+END
+SBJsonParser.h
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/Projects/!svn/ver/26020/Crown/Crown.Westend.iOS/ThridParties/facebook-ios-sdk/SBJsonParser.h
+END
