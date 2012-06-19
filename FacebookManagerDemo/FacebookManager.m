@@ -9,7 +9,6 @@
 #import "FacebookManager.h"
 #import "AppDelegate.h"
 #import "JSON.h"
-#import "UIAlertView+Utilities.h"
 
 @interface FacebookManager () {
     
@@ -27,7 +26,8 @@
 @property (retain, nonatomic) NSString *path;
 @property (assign, nonatomic) FacebookCallBackMode callBackMode;
 @property (retain, nonatomic) NSMutableDictionary *params;
-@property (copy, nonatomic) FacebookCallBack callbackMethod;
+@property (copy, nonatomic) FacebookCallBack callbackBlock;
+@property (copy, nonatomic) FacebookFailHandler errorBlock;
 @property (assign, nonatomic) NSString *httpMethod;
 @property (assign, nonatomic) BOOL requestSent;
 @property (retain, nonatomic) FBRequest *request;
@@ -40,7 +40,8 @@
 @synthesize path;
 @synthesize callBackMode;
 @synthesize params;
-@synthesize callbackMethod;
+@synthesize callbackBlock;
+@synthesize errorBlock;
 @synthesize httpMethod;
 @synthesize requestSent;
 @synthesize request;
@@ -56,9 +57,9 @@
 - (void)sendRequest {
     if (!requestSent) {
 #if DEBUG
-        NSLog(@"Query Graph API Path: %@", self.path);
+        NSLog(@"Facebook Graph API Path: %@", self.path);
         if (params) {
-            NSLog(@"With Parameters; %@", self.params);
+            NSLog(@"Using Parameters: %@", self.params);
         }
 #endif
         
@@ -96,7 +97,7 @@
 + (Facebook *)facebook {
 	static Facebook *facebook = nil;
 	if (facebook == nil) {
-		facebook = [[Facebook alloc] initWithAppId:@"261748360599446" andDelegate:[FacebookManager sharedManager]];
+		facebook = [[Facebook alloc] initWithAppId:@"269620349802751" andDelegate:[FacebookManager sharedManager]];
         
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         if ([defaults objectForKey:@"FBAccessTokenKey"] 
@@ -123,7 +124,8 @@
 }
 
 - (void)fbDidLogout {
-    [UIAlertView showAlert:@"Your facebook session is ended"]; 
+    //[UIAlertView showAlert:@"Your facebook session is ended"];
+    NSLog(@"Facebook session is ended");
 }
 
 - (void)fbDidExtendToken:(NSString*)accessToken
@@ -176,6 +178,7 @@
                                            @"user_photos", // upload photo
                                            @"user_likes", // Create like
                                            @"read_stream", // Read post I guess
+                                           @"email", // yes, email
                                            nil]];
 }
 
@@ -193,11 +196,12 @@
 #pragma -
 #pragma Actual API Calls
 // The actual class send request
-+ (void)sendGraphAPIRequest:(NSString *)path params:(NSMutableDictionary *)params mode:(FacebookCallBackMode)callbackMode httpMethod:(NSString *)httpMethod withCompletionBlock:(FacebookCallBack)completionHandler {
++ (void)sendGraphAPIRequest:(NSString *)path params:(NSMutableDictionary *)params mode:(FacebookCallBackMode)callbackMode httpMethod:(NSString *)httpMethod withCompletionBlock:(FacebookCallBack)completionHandler  withFailureHandler:(void (^)(NSError *error))failureHandler {
     FBRequestHelper *requestHelper = [[FBRequestHelper alloc] init];
     requestHelper.path = path;
     requestHelper.params = params;
-    requestHelper.callbackMethod = completionHandler;
+    requestHelper.callbackBlock = completionHandler;
+    requestHelper.errorBlock = failureHandler;
     requestHelper.callBackMode = callbackMode;
     requestHelper.httpMethod = httpMethod;
     [[FacebookManager sharedManager].activeRequests addObject:requestHelper];
@@ -211,29 +215,47 @@
     }
 }
 
-+ (void)searchPlaceById:(NSString *)placeId withCompletionHandler:(FacebookCallBack)completionHandler {
-    [FacebookManager sendGraphAPIRequest:placeId params:nil mode:FacebookCallBackModeJSON httpMethod:@"GET" withCompletionBlock:completionHandler];
++ (void)searchPlaceById:(NSString *)placeId withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
+    [FacebookManager sendGraphAPIRequest:placeId params:nil mode:FacebookCallBackModeJSON httpMethod:@"GET" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
 }
 
-+ (void)friends:(FacebookCallBack)completionHandler {
-    [FacebookManager sendGraphAPIRequest:@"me/friends" params:nil mode:FacebookCallBackModeJSON httpMethod:@"GET" withCompletionBlock:completionHandler];
++ (void)me:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
+    [FacebookManager sendGraphAPIRequest:@"me" params:nil mode:FacebookCallBackModeJSON httpMethod:@"GET" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
 }
 
-+ (void)pictureForObject:(NSString *)objectId withCompletionHandler:(FacebookCallBack)completionHandler {
-    [FacebookManager sendGraphAPIRequest:[NSString stringWithFormat:@"%@/picture", objectId] params:nil mode:FacebookCallBackModeRawData httpMethod:@"GET" withCompletionBlock:completionHandler];
++ (void)friends:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
+    [FacebookManager sendGraphAPIRequest:@"me/friends" params:nil mode:FacebookCallBackModeJSON httpMethod:@"GET" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
 }
 
-+ (void)searchPlaceByCoordinate:(CLLocationCoordinate2D)coordinate withCompletionHandler:(FacebookCallBack)completionHandler {
++ (void)postToWall:(NSString *)message link:(NSString *)link picture:(NSString *)picture withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    if (message) {
+        [params setObject:message forKey:@"message"];
+    }
+    if (link) {
+        [params setObject:link forKey:@"link"];
+    }
+    if (picture) {
+        [params setObject:picture forKey:@"picture"];
+    }
+    [FacebookManager sendGraphAPIRequest:@"me/feed" params:params mode:FacebookCallBackModeJSON httpMethod:@"POST" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
+}
+
++ (void)pictureForObject:(NSString *)objectId withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
+    [FacebookManager sendGraphAPIRequest:[NSString stringWithFormat:@"%@/picture", objectId] params:nil mode:FacebookCallBackModeRawData httpMethod:@"GET" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
+}
+
++ (void)searchPlaceByCoordinate:(CLLocationCoordinate2D)coordinate withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
     NSMutableDictionary *params = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                    @"place", @"type",
                                    [NSString stringWithFormat:@"%f,%f", coordinate.latitude, coordinate.longitude], @"center",
                                    @"300", @"distance",
                                    nil];
-    [FacebookManager sendGraphAPIRequest:@"search" params:params mode:FacebookCallBackModeJSON httpMethod:@"GET" withCompletionBlock:completionHandler];
+    [FacebookManager sendGraphAPIRequest:@"search" params:params mode:FacebookCallBackModeJSON httpMethod:@"GET" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
 }
 
 #define kMinimumNoticeableFloatValue (0.000000001)
-+ (void)checkInToPlace:(NSString *)placeId atCoordinate:(CLLocationCoordinate2D)coordinate message:(NSString *)message photoURL:(NSString *)photoURL withCompletionHandler:(FacebookCallBack)completionHandler {
++ (void)checkInToPlace:(NSString *)placeId atCoordinate:(CLLocationCoordinate2D)coordinate message:(NSString *)message photoURL:(NSString *)photoURL withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
     if (fabs(coordinate.latitude) > kMinimumNoticeableFloatValue && fabs(coordinate.longitude) > kMinimumNoticeableFloatValue) {
         SBJSON *jsonWriter = [SBJSON new];
         NSMutableDictionary *coordinatesDictionary = [NSMutableDictionary dictionaryWithObjectsAndKeys:
@@ -252,18 +274,18 @@
         if (photoURL) {
             [params setObject:photoURL forKey:@"picture"];
         }
-        [FacebookManager sendGraphAPIRequest:@"me/checkins" params:params mode:FacebookCallBackModeJSON httpMethod:@"POST" withCompletionBlock:completionHandler];
+        [FacebookManager sendGraphAPIRequest:@"me/checkins" params:params mode:FacebookCallBackModeJSON httpMethod:@"POST" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
     } else {
         [UIAlertView showAlert:@"Invalid current location" title:@"Unable to check in"];
     }
 }
 
-+ (void)uploadPhoto:(UIImage *)photo message:(NSString *)message withCompletionHandler:(FacebookCallBack)completionHandler {
++ (void)uploadPhoto:(UIImage *)photo message:(NSString *)message withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler {
     NSMutableDictionary *params = [NSMutableDictionary dictionaryWithObjectsAndKeys:
                                    photo, @"source",
                                    message, @"message", 
                                    nil];
-    [FacebookManager sendGraphAPIRequest:@"me/photos" params:params mode:FacebookCallBackModeJSON httpMethod:@"POST" withCompletionBlock:completionHandler];
+    [FacebookManager sendGraphAPIRequest:@"me/photos" params:params mode:FacebookCallBackModeJSON httpMethod:@"POST" withCompletionBlock:completionHandler withFailureHandler:failureHandler];
 }
 
 #pragma -
@@ -271,7 +293,7 @@
 
 - (void)request:(FBRequest *)request didLoad:(id)result {
 #if DEBUG
-    NSLog(@"%@", result);
+    NSLog(@"Facebook Response: %@", result);
 #endif
     FBRequestHelper *matchedRequestHelper = nil;
     for (FBRequestHelper *requestHelper in [FacebookManager sharedManager].activeRequests) {
@@ -280,7 +302,7 @@
         }
     }
     if (matchedRequestHelper && matchedRequestHelper.callBackMode == FacebookCallBackModeJSON) {
-        matchedRequestHelper.callbackMethod(result);
+        matchedRequestHelper.callbackBlock(result);
         [[FacebookManager sharedManager].activeRequests removeObject:matchedRequestHelper];
     }
 }
@@ -293,7 +315,7 @@
         }
     }
     if (matchedRequestHelper && matchedRequestHelper.callBackMode == FacebookCallBackModeRawData) {
-        matchedRequestHelper.callbackMethod(data);
+        matchedRequestHelper.callbackBlock(data);
         [[FacebookManager sharedManager].activeRequests removeObject:matchedRequestHelper];
     }
 }
@@ -313,13 +335,24 @@
             matchedRequestHelper = requestHelper;
         }
     }
-    if (matchedRequestHelper && matchedRequestHelper) {
+    if (matchedRequestHelper) {
+        matchedRequestHelper.errorBlock(error);
         [[FacebookManager sharedManager].activeRequests removeObject:matchedRequestHelper];
     }
     
 #if DEBUG
-    NSLog(@"Facebook Request Failed: %@ \n\r %@ %@ %@", [request url], [error description], [error localizedDescription], [error localizedFailureReason]);
+    NSLog(@"Facebook Request Failed: %@ %@ %@ %@", [request url], [error description], [error localizedDescription], [error localizedFailureReason]);
 #endif
+    
+    if (error) {
+        NSDictionary *userInfo = [error userInfo];
+        if (userInfo && [userInfo objectForKey:@"error"]) {
+            NSDictionary *errorDict = [userInfo objectForKey:@"error"];
+            if (userInfo && [errorDict objectForKey:@"message"]) {
+                [UIAlertView showAlert:[NSString stringWithFormat:@"Facebook: %@", [errorDict objectForKey:@"message"]]];
+            }
+        }
+    }
 }
 
 + (BOOL)handleOpenURL:(NSURL *)url {

@@ -10,7 +10,7 @@
 #import "FacebookManager.h"
 #import "CustomTableViewCell.h"
 #import "SystemWideImageLoader.h"
-#import "MultilineTextView.h"
+#import "UIPlaceHolderTextView.h"
 
 @interface FacebookCheckInViewController()<CLLocationManagerDelegate, UITableViewDataSource, UITableViewDelegate, UITextViewDelegate, UINavigationControllerDelegate, UIImagePickerControllerDelegate> {
     BOOL sendRequestAlready;
@@ -49,6 +49,8 @@
                 [places addObject:results];
                 [placesTableView reloadData];
                 [placesTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:selectedPlaceIndex inSection:0] animated:YES scrollPosition:UITableViewScrollPositionNone];
+            } withFailureHandler:^(NSError *error) {
+                
             }];
         }
     }
@@ -60,19 +62,6 @@
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation {
 	if(newLocation.horizontalAccuracy < 100) {
         currentLocation = newLocation;
-        
-        /*
-         if (!sendRequestAlready) {[FacebookManager searchPlaceByCoordinate:newLocation.coordinate withCompletionHandler:^(id results) {
-         NSLog(@"%@", results);
-         if ([results isKindOfClass:[NSDictionary class]]) {
-         places = [(NSArray *)[results objectForKey:@"data"] mutableCopy];
-         [placesTableView reloadData];
-         }
-         }];
-         sendRequestAlready = YES;
-         }*/
-        
-        
     }
 }
 
@@ -81,7 +70,7 @@
     
     CGFloat accumulatedHeight = 0.0;
     CGFloat spaceBetweenElements = 20.0;
-    messageTextView = [[MultilineTextView alloc] initWithFrame:CGRectMake(0.0, accumulatedHeight, self.view.bounds.size.width, 100.0)];
+    messageTextView = [[UIPlaceHolderTextView alloc] initWithFrame:CGRectMake(0.0, accumulatedHeight, self.view.bounds.size.width, 100.0)];
     messageTextView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
     messageTextView.font = [UIFont systemFontOfSize:15.0];
     messageTextView.textColor = [UIColor blackColor];
@@ -133,9 +122,11 @@
     if (selectedPlaceIndex < places.count && currentLocation) {
         [FacebookManager checkInToPlace:[[places objectAtIndex:selectedPlaceIndex] objectForKey:@"id"] atCoordinate:currentLocation.coordinate message:messageTextView.text photoURL:nil withCompletionHandler:^(id results) {
             [UIAlertView showAlert:[NSString stringWithFormat:@"You have checked in %@", [[places objectAtIndex:selectedPlaceIndex] objectForKey:@"name"]] title:@"Check In Successfully"];
+        } withFailureHandler:^(NSError *error) {
+            
         }];
     } else {
-        [UIAlertView showAlert:@"No placed selected or can't determin current location" title:@"Unable to check in"];
+        [UIAlertView showAlert:@"No placed selected or can't determin current location" title:@"Facebook: unable to check in"];
     }
 }
 

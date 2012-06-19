@@ -10,12 +10,15 @@
 #import <CoreLocation/CoreLocation.h>
 #import "FBConnect.h"
 
+#define NOTIFICATION_FACEBOOK_SIGNED_IN @"FacebookSignedIn"
+
 typedef enum {
     FacebookCallBackModeJSON = 0,
     FacebookCallBackModeRawData = 1
 } FacebookCallBackMode;
 
 typedef void (^FacebookCallBack)(id results);
+typedef void (^FacebookFailHandler)(NSError *error);
 
 @interface FacebookManager : NSObject<FBSessionDelegate, FBDialogDelegate, FBRequestDelegate> {
 
@@ -28,11 +31,13 @@ typedef void (^FacebookCallBack)(id results);
 + (BOOL)isSessionValid;
 
 // Graph API
-+ (void)friends:(FacebookCallBack)completionHandler;
-+ (void)searchPlaceById:(NSString *)placeId withCompletionHandler:(FacebookCallBack)completionHandler;
-+ (void)pictureForObject:(NSString *)objectId withCompletionHandler:(FacebookCallBack)completionHandler;
-+ (void)searchPlaceByCoordinate:(CLLocationCoordinate2D)coordinate withCompletionHandler:(FacebookCallBack)completionHandler;
-+ (void)checkInToPlace:(NSString *)placeId atCoordinate:(CLLocationCoordinate2D)coordinate message:(NSString *)message photoURL:(NSString *)photoURL withCompletionHandler:(FacebookCallBack)completionHandler;
-+ (void)uploadPhoto:(UIImage *)photo message:(NSString *)message withCompletionHandler:(FacebookCallBack)completionHandler;
++ (void)me:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
++ (void)friends:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
++ (void)postToWall:(NSString *)message link:(NSString *)link picture:(NSString *)picture withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
++ (void)searchPlaceById:(NSString *)placeId withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
++ (void)pictureForObject:(NSString *)objectId withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
++ (void)searchPlaceByCoordinate:(CLLocationCoordinate2D)coordinate withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
++ (void)checkInToPlace:(NSString *)placeId atCoordinate:(CLLocationCoordinate2D)coordinate message:(NSString *)message photoURL:(NSString *)photoURL withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
++ (void)uploadPhoto:(UIImage *)photo message:(NSString *)message withCompletionHandler:(FacebookCallBack)completionHandler withFailureHandler:(void (^)(NSError *error))failureHandler;
 
 @end
